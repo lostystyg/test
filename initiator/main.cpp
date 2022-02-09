@@ -7,13 +7,14 @@
 #include <boost/asio.hpp>
 #include <thread>
 
-void Write(boost::asio::ip::tcp::socket& socket) {
+void Write(boost::asio::ip::udp::socket& socket) {
     std::string toWrite;
     std::cin >> toWrite;
-    boost::asio::async_write(socket, boost::asio::buffer(toWrite.data(), toWrite.size()), [&socket](boost::system::error_code err, size_t bytes) {
+    socket.async_send(boost::asio::buffer(toWrite.data(), toWrite.size()), [&socket](boost::system::error_code err, size_t bytes) {
                 std::cout << "Sended!!!: " << bytes << std::endl;
                 if (err) {
                     std::cout << "Error: " << err.message() << std::endl;
+                    return;
                 }
                 Write(socket);
             });
@@ -27,8 +28,8 @@ int main(int argc, char** argv) {
     std::string ip = argv[1];
     int port = std::stoll (argv[2]);
     boost::asio::io_context context;
-    boost::asio::ip::tcp::socket socket(context);
-    socket.async_connect(boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), port), [&socket](boost::system::error_code err) {
+    boost::asio::ip::udp::socket socket(context);
+    socket.async_connect(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port), [&socket](boost::system::error_code err) {
         Write(socket);
     });
     
